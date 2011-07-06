@@ -24,9 +24,7 @@
         </item>
         <item>
             <key> <string>raw</string> </key>
-            <value> <string>\n
-\n
-.ajSteps li {\n
+            <value> <string>.ajSteps li {\n
     background-position: 5px 0.5em;\n
     margin: 0;\n
     padding: 0.4em 0.4em 0.4em 16px;\n
