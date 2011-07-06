@@ -1,0 +1,9 @@
+<property_sheet_list>
+ <portal_type id="Tour">
+  <item>Reference</item>
+ </portal_type>
+ <portal_type id="Tour Step">
+  <item>TextDocument</item>
+  <item>Url</item>
+ </portal_type>
+</property_sheet_list>

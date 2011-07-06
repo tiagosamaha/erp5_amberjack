@@ -1,0 +1,705 @@
+<?xml version="1.0"?>
+<ZopeData>
+  <record id="1" aka="AAAAAAAAAAE=">
+    <pickle>
+      <global name="DTMLDocument" module="OFS.DTMLDocument"/>
+    </pickle>
+    <pickle>
+      <dictionary>
+        <item>
+            <key> <string>__name__</string> </key>
+            <value> <string>amberjack.js</string> </value>
+        </item>
+        <item>
+            <key> <string>_vars</string> </key>
+            <value>
+              <dictionary/>
+            </value>
+        </item>
+        <item>
+            <key> <string>globals</string> </key>
+            <value>
+              <dictionary/>
+            </value>
+        </item>
+        <item>
+            <key> <string>raw</string> </key>
+            <value> <string encoding="cdata"><![CDATA[
+
+/*\n
+ * first cut: 17. Oct 2006\n
+ * Amberjack 0.9 - Site Tour Creator - Simple. Free. Open Source.\n
+ *\n
+ * $Id: amberjack.js,v 1.17 2007/02/09 20:46:24 aya Exp $\n
+ *\n
+ * Copyright (C) 2006 Arash Yalpani <arash@yalpani.de>\n
+ *\n
+ * This library is free software; you can redistribute it and/or\n
+ * modify it under the terms of the GNU Lesser General Public\n
+ * License as published by the Free Software Foundation; either\n
+ * version 2.1 of the License, or (at your option) any later version.\n
+ *\n
+ * This library is distributed in the hope that it will be useful,\n
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of\n
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n
+ * Lesser General Public License for more details.\n
+\n
+ * You should have received a copy of the GNU Lesser General Public\n
+ * License along with this library; if not, write to the Free Software\n
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA\n
+ */\n
+\n
+\n
+// Try to be compatible with other browsers\n
+// Only use firebug logging if available\n
+if (typeof console == \'undefined\') {\n
+  console = {};\n
+  console.log = function() {};\n
+}\n
+\n
+/**\n
+ * Capsulates some static helper functions\n
+ * @author Arash Yalpani\n
+ *\n
+ * This one is mainly for myself, but you can learn from that.\n
+ *\n
+ *\n
+ * How this library works -\n
+ *\n
+ * Hint: to change Amberjack\'s default behavior, set values\n
+ *       prior to the call to Amberjack.open() (in the wizard\'s output)\n
+ *\n
+ * 1. Amberjack.open() is called through the HTML code the wizard spit out\n
+ *    you should have includet in your site\'s template file\n
+ *\n
+ * 2. Amberjack.open()...:\n
+ *\n
+ *    2.1. ... checks for tourId and skinId url param...\n
+ *      2.1.1. ...and stops execution, if no tourId was passed by url\n
+ *      2.2.1. ...and sets skinId to default \'model_t\' if none  was\n
+ *                passed by url\n
+ *\n
+ *    2.2. ... reads your web page\'s DOM structure, searches for the tour\n
+ *             definition (you should have pasted into your site\'s\n
+ *             template), parses it to create the array \'Amberjack.pages\'\n
+ *             and to calculate the tour\'s params (i.e. number of tour\n
+ *             pages, closeUrl)\n
+ *\n
+ *    2.3. ... fetches control.tpl.js and style.css from\n
+ *             http://amberjack.org/src/stable/skin/<skinname>/\n
+ *             (default setting) OR from your own site, if you have set\n
+ *             Amberjack.BASE_URL\'s value accordingly\n
+ *\n
+ *    2.4. ... covers your web page\'s body with a transparent layer (DIV) if\n
+ *             Amberjack.doCoverBody is \'true\' which is the default option\n
+ *\n
+ * 3. In step \'2.3\', I explained that control.tpl.js is fetched from\n
+ *    either amberjack.org or your own server. control.tpl.js is the\n
+ *    template file of a skin and what it does is to call the function\n
+ *    AmberjackControl.open(\'<div ... </div>\') like this. The HTML\n
+ *    inside is the control\'s template.\n
+ *\n
+ *    3.1. AmberjackControl.open() ...\n
+ *      3.1.1. ... fills the template\'s placeholders with values\n
+ *      3.1.2. ... creates a DIV for the control\n
+ *      3.1.3. ... fills the DIV\'s content with the assembled skin\n
+ *                 template (see 2.3)\n
+ *      3.1.4. ... hides the control\'s close button if no closeUrl\n
+ *                 was specified through wizard\'s output and\n
+ *                 option \'onCloseClickStay\' was not set to true\n
+ *      3.1.4. ... checks for optional Amberjack.ADD_STYLE and\n
+ *                 Amberjack.ADD_SCRIPT and post fetches them if set.\n
+ *                 You can use this to manipulate tour\'s behaviour\n
+ *                 right after it gets visible. Maximum flexibility!\n
+ *\n
+ * That\'s it, basically!\n
+ */\n
+\n
+\n
+AmberjackBase = {\n
+\n
+  /**\n
+   * Proxy alerter\n
+   * @author Arash Yalpani\n
+   *\n
+   * @param str Text for alert\n
+   *\n
+   * @example alert(\'An error occurred\')\n
+   */\n
+\n
+  alert: function(str) {\n
+    alert(\'Amberjack alert: \' + str);\n
+  },\n
+\n
+  /**\n
+   * Returns FIRST matching element by tagname\n
+   * @author Arash Yalpani\n
+   *\n
+   * @param tagName name of tags to filter\n
+   * @return first matching dom node or false if none exists\n
+   *\n
+   * @example getByTagName(\'div\') => domNode\n
+   * @example getByTagName(\'notexistent\') => false\n
+   */\n
+\n
+  getByTagName: function(tagName) {\n
+    var els = document.getElementsByTagName(tagName);\n
+    if (els.length > 0) {\n
+      return els[0];\n
+    }\n
+\n
+    return false;\n
+  },\n
+\n
+  /**\n
+   * Returns an array of matching DOM nodes\n
+   * @author Arash Yalpani\n
+   *\n
+   * @param tagName name of tags to filter\n
+   * @param attrName name of attribute, matching tags must contain\n
+   * @param attrValue value of attribute, matching tags must contain\n
+   * @param domNode optional: dom node to start filtering from\n
+   * @return Array of matching dom nodes\n
+   *\n
+   * @example getElementsByTagNameAndAttr(\'div\', \'class\', \'highlight\') => [domNode1, domNode2, ...]\n
+   */\n
+   getElementsByTagNameAndAttr: function(tagName, attrName, attrValue, domNode) {\n
+    if (domNode) {\n
+      els = domNode.getElementsByTagName(tagName);\n
+    }\n
+    else {\n
+      els = document.getElementsByTagName(tagName);\n
+    }\n
+\n
+    if (els.length === 0) {\n
+      return [];\n
+    }\n
+\n
+    var _els = [];\n
+    for (var i = 0; i < els.length; i++) {\n
+      if (attrName == \'class\') {\n
+        classNames = \'\';\n
+        if (els[i].getAttribute(\'class\')) {\n
+          classNames = els[i].getAttribute(\'class\');\n
+        }\n
+        else {\n
+          if (els[i].getAttribute(\'className\')) {\n
+            classNames = els[i].getAttribute(\'className\');\n
+          }\n
+        }\n
+\n
+        var reg = new RegExp(\'(^| )\'+ attrValue +\'($| )\');\n
+        if (reg.test(classNames)) {\n
+          _els.push(els[i]);\n
+        }\n
+      }\n
+      else {\n
+        if (els[i].getAttribute(attrName) == attrValue) {\n
+          _els.push(els[i]);\n
+        }\n
+      }\n
+    }\n
+\n
+    return _els;\n
+  },\n
+\n
+  /**\n
+   * Returns url param value\n
+   * @author Arash Yalpani\n
+   *\n
+   * @param url The url to be queried\n
+   * @param paramName The params name\n
+   * @return paramName\'s value or false if param does not exist or is empty\n
+   *\n
+   * @example getUrlParam(\'http://localhost/?a=123\', \'a\') => 123\n
+   * @example getUrlParam(\'http://localhost/?a=123\', \'b\') => false\n
+   * @example getUrlParam(\'http://localhost/?a=\',    \'a\') => false\n
+   */\n
+\n
+  getUrlParam: function(url, paramName) {\n
+    var urlSplit = url.split(\'?\');\n
+    if (!urlSplit[1]) { // no query\n
+      return false;\n
+    }\n
+\n
+    var urlQuery = urlSplit[1];\n
+    var paramsSplit = urlSplit[1].split(\'&\');\n
+    for (var i = 0; i < paramsSplit.length; i++) {\n
+      paramSplit = paramsSplit[i].split(\'=\');\n
+      if (paramSplit[0] == paramName) {\n
+        return paramSplit[1] ? paramSplit[1] : false;\n
+      }\n
+    }\n
+\n
+    return false;\n
+  },\n
+\n
+  /**\n
+   * Injects javascript or css file into document\n
+   *\n
+   * @author Arash Yalpani\n
+   *\n
+   * @param url The JavaScript/CSS file\'s url\n
+   * @param type Either \'script\' OR \'style\'\n
+   * @param onerror Optional: callback handler if loading did not work\n
+   *\n
+   * @example loadScript(\'http://localhost/js/dummy.js\', function(){alert(\'could not load\')})\n
+   * Note that a HEAD tag needs to be existent in the current document\n
+   */\n
+\n
+  postFetch: function(url, type, onerror) {\n
+    if (type === \'script\') {\n
+      scriptOrStyle = document.createElement(\'script\');\n
+      scriptOrStyle.type = \'text/javascript\';\n
+      scriptOrStyle.src  = url;\n
+    }\n
+    else {\n
+      scriptOrStyle = document.createElement(\'link\');\n
+      scriptOrStyle.type = \'text/css\';\n
+      scriptOrStyle.rel  = \'stylesheet\';\n
+      scriptOrStyle.href = url;\n
+    }\n
+\n
+    if (onerror) { scriptOrStyle.onerror = onerror; }\n
+\n
+    var head = AmberjackBase.getByTagName(\'head\');\n
+    if (head) {\n
+      head.appendChild(scriptOrStyle);\n
+      return ;\n
+    }\n
+\n
+    AmberjackBase.alert(\'head tag is missing\');\n
+  }\n
+};\n
+\n
+\n
+/**\n
+ * Amberjack Control class\n
+ * @author Arash Yalpani\n
+ */\n
+\n
+AmberjackControl = {\n
+\n
+  /**\n
+   * Callback handler for template files. Takes template HTML and fills placeholders\n
+   * @author Arash Yalpani\n
+   *\n
+   * @param tplHtml HTML code including Amberjack placeholders\n
+   *\n
+   * @example AmberjackControl.open(\'<div>{body}</div>\')\n
+   * Note that this method should be called directly through control.tpl.js files\n
+   */\n
+\n
+  open: function(tplHtml) {\n
+    var urlSplit = false;\n
+    var urlQuery = false;\n
+    tplHtml = tplHtml.replace(/{skinId}/, Amberjack.skinId);\n
+    if (Amberjack.pages[Amberjack.pageId].prevUrl) {\n
+      var prevUrl = Amberjack.pages[Amberjack.pageId].prevUrl;\n
+      urlSplit = prevUrl.split(\'?\');\n
+      urlQuery = urlSplit[1] ? urlSplit[1] : false;\n
+      if (Amberjack.urlPassTourParams) {\n
+        prevUrl+= (urlQuery ? \'&\' : \'?\') + \'erp5_tour_reference=\' + Amberjack.tourId +\'&tourId=\' + Amberjack.tourId + (Amberjack.skinId ? \'&skinId=\' + Amberjack.skinId : \'\');\n
+      }\n
+\n
+      tplHtml = tplHtml.replace(/{prevClick}/,   "location.href=\'" + prevUrl + "\';return false;");\n
+      tplHtml = tplHtml.replace(/{prevClass}/,   \'\');\n
+    }\n
+    else {\n
+      tplHtml = tplHtml.replace(/{prevClick}/,   \'return false;\');\n
+      tplHtml = tplHtml.replace(/{prevClass}/,   \'disabled\');\n
+    }\n
+\n
+    if (Amberjack.pages[Amberjack.pageId].nextUrl) {\n
+      var nextUrl = Amberjack.pages[Amberjack.pageId].nextUrl;\n
+      urlSplit = nextUrl.split(\'?\');\n
+      urlQuery = urlSplit[1] ? urlSplit[1] : false;\n
+      if (Amberjack.urlPassTourParams && (!Amberjack.hasExitPage || Amberjack.pages[nextUrl].nextUrl)) { // do not append params for exit page (if exit page exists)\n
+        nextUrl+= (urlQuery ? \'&\' : \'?\') + \'erp5_tour_reference=\' + Amberjack.tourId + \'&tourId=\' + Amberjack.tourId + (Amberjack.skinId ? \'&skinId=\' + Amberjack.skinId : \'\');\n
+      }\n
+\n
+      tplHtml = tplHtml.replace(/{nextClick}/,       "location.href=\'" + nextUrl + "\';return false;");\n
+      tplHtml = tplHtml.replace(/{nextClass}/,       \'\');\n
+    }\n
+    else {\n
+      tplHtml = tplHtml.replace(/{nextClick}/,       \'return false;\');\n
+      tplHtml = tplHtml.replace(/{nextClass}/,       \'disabled\');\n
+    }\n
+\n
+    tplHtml = tplHtml.replace(/{textOf}/,          Amberjack.textOf);\n
+    tplHtml = tplHtml.replace(/{textClose}/,       Amberjack.textClose);\n
+    tplHtml = tplHtml.replace(/{textPrev}/,        Amberjack.textPrev);\n
+    tplHtml = tplHtml.replace(/{textNext}/,        Amberjack.textNext);\n
+    tplHtml = tplHtml.replace(/{currPage}/,        Amberjack.pageCurrent);\n
+    tplHtml = tplHtml.replace(/{pageCount}/,       Amberjack.pageCount);\n
+\n
+    tplHtml = tplHtml.replace(/{body}/,            AmberjackBase.getElementsByTagNameAndAttr(\'div\', \'title\', Amberjack.pageId, document.getElementById(Amberjack.tourId))[0].innerHTML);\n
+\n
+    var div = document.createElement(\'div\');\n
+    div.id = \'AmberjackControl\';\n
+    div.innerHTML = tplHtml;\n
+\n
+    document.body.appendChild(div);\n
+\n
+    // Amberjack.doHighlight();\n
+\n
+    // No URL was set AND no click-close-action was configured:\n
+    if (!Amberjack.closeUrl && !Amberjack.onCloseClickStay) {\n
+      document.getElementById(\'ajClose\').style.display = \'none\';\n
+    }\n
+\n
+    // post fetch a CSS file you can define by setting Amberjack.ADD_STYLE\n
+    // right before the call to Amberjack.open();\n
+    if (Amberjack.ADD_STYLE) {\n
+      AmberjackBase.postFetch(Amberjack.ADD_STYLE, \'style\');\n
+    }\n
+\n
+    // post fetch a script you can define by setting Amberjack.ADD_SCRIPT\n
+    // right before the call to Amberjack.open();\n
+    if (Amberjack.ADD_SCRIPT) {\n
+      AmberjackBase.postFetch(Amberjack.ADD_SCRIPT, \'script\');\n
+    }\n
+  },\n
+\n
+  /**\n
+   * Removes AmberjackControl div from DOM\n
+   * @author Arash Yalpani\n
+   *\n
+   * @example AmberjackControl.close()\n
+   */\n
+\n
+  close: function() {\n
+    e = document.getElementById(\'AmberjackControl\');\n
+    e.parentNode.removeChild(e);\n
+  }\n
+};\n
+\n
+\n
+/**\n
+ * Amberjack\'s main class\n
+ * @author Arash Yalpani\n
+ */\n
+\n
+Amberjack = {\n
+\n
+  // constants\n
+\n
+  BASE_URL: \'http://amberjack.org/src/stable/\', // do not forget trailing slash!\n
+\n
+  // explicit attributes\n
+\n
+  // - set these through url (...&tourId=MyTour&skinId=Safari...)\n
+  // - OR in your tour template right above the call to Amberjack.open()\n
+\n
+  tourId:    false,     // mandatory: if not set, tour will not open\n
+  skinId:    false,     // optional: if not set, skin "model_t" will be used\n
+\n
+  // - set these in your tour template right above the call to Amberjack.open()\n
+\n
+  textOf:    \'of\',      // text of splitter between "2 of 3"\n
+  textClose: \'x\',       // text of close button\n
+  textPrev:  \'&laquo;\', // text of previous button\n
+  textNext:  \'&raquo;\', // text of next button\n
+\n
+  // - set set these in your tour template right above the call to Amberjack.open()\n
+\n
+  onCloseClickStay     : false, // set this to \'true\', if you want the close button to close tour but remain on current page\n
+  doCoverBody          : true,  // set this to \'false\' if you don\'t want your site\'s page to be covered\n
+  bodyCoverCloseOnClick: false, // set this to \'true\', if a click on the body cover should force it to close\n
+  urlPassTourParams    : true,  // set this to false, if you have hard coded the tourId and skinId in your tour\n
+                                //     template. the tourId and skindId params will not get passed on prev/next button click\n
+\n
+\n
+\n
+\n
+  // private attributes - don\'t touch\n
+\n
+  pageId:    false,\n
+  pages:     {},\n
+  pageCount: 0,\n
+  hasExitPage: false,\n
+  interval: false,\n
+\n
+\n
+  /**\n
+   * Initializes tour, creates transparent layer and causes AmberjackControl\n
+   * to open the skin\'s template (control.tpl.js) into document. Call this\n
+   * manually right after inclusion of this library. Don\'t forget to pass\n
+   * tourId param through URL to show tour!\n
+   *\n
+   * Iterates child DIVs of DIV.ajTourDef, extracts tour pages\n
+   *\n
+   * @author Arash Yalpani\n
+   *\n
+   * @example Amberjack.open()\n
+   * Note that a HEAD tag needs to be existent in the current document\n
+   */\n
+\n
+  open: function() {\n
+    Amberjack.tourId = Amberjack.tourId ? Amberjack.tourId : AmberjackBase.getUrlParam(location.href, \'tourId\');\n
+    Amberjack.skinId = Amberjack.skinId ? Amberjack.skinId : AmberjackBase.getUrlParam(location.href, \'skinId\');\n
+\n
+    if (!Amberjack.tourId) { // do nothing if tourId is not passed through url\n
+      return;\n
+    }\n
+\n
+    if (!Amberjack.skinId) { // set default skinId\n
+      Amberjack.skinId = \'model_t\';\n
+    }\n
+\n
+    var tourDef = false;\n
+    var tourDefElements = AmberjackBase.getElementsByTagNameAndAttr(\'div\', \'class\', \'ajTourDef\');\n
+    for (i = 0; i < tourDefElements.length; i++) {\n
+      if (tourDefElements[i].getAttribute(\'id\') == Amberjack.tourId) {\n
+        tourDef = tourDefElements[i];\n
+      }\n
+    }\n
+\n
+    if (!tourDef) {\n
+      AmberjackBase.alert(\'DIV with CLASS "ajTourDef" and ID "\' + Amberjack.tourId + \'" is not defined\');\n
+    }\n
+\n
+    // Is there a specified closeUrl (title attribute of DIV.ajTourDef)?\n
+    // Don\'t show close button if not set\n
+    Amberjack.closeUrl = tourDef.getAttribute(\'title\') ? tourDef.getAttribute(\'title\') : false;\n
+\n
+    var children = tourDef.childNodes;\n
+    var _children = []; // cleaned up version...\n
+    for (i = 0; i < children.length; i++) {\n
+      if (!children[i].tagName || children[i].tagName.toLowerCase() != \'div\') { continue ; }\n
+      _children.push(children[i]);\n
+    }\n
+\n
+    // init tour pages\n
+    for (i = 0; i < _children.length; i++) {\n
+      Amberjack.pages[_children[i].getAttribute(\'title\')] = {};\n
+    }\n
+\n
+    for (i = 0; i < _children.length; i++) {\n
+      if (!_children[i].tagName || _children[i].tagName.toLowerCase() != \'div\') { continue ; }\n
+\n
+      if (!_children[i].getAttribute(\'title\')) {\n
+        AmberjackBase.alert(\'attribute "title" is missing\');\n
+        return ;\n
+      }\n
+\n
+      // -- start: check for matching page in divs --\n
+      if (Amberjack.urlMatch(_children[i].getAttribute(\'title\')) && _children[i].innerHTML !== \'\') {\n
+        Amberjack.pageCurrent = i + 1;\n
+        Amberjack.pageId = _children[i].getAttribute(\'title\');\n
+      }\n
+      // -- end: check for matching page in divs --\n
+\n
+      Amberjack.pageCount++;\n
+      if (i >= 1 && i < _children.length) {\n
+        Amberjack.pages[_children[i].getAttribute(\'title\')].prevUrl = _children[i - 1].getAttribute(\'title\');\n
+      }\n
+      if (i < _children.length - 1) {\n
+        Amberjack.pages[_children[i].getAttribute(\'title\')].nextUrl = _children[i + 1].getAttribute(\'title\');\n
+      }\n
+    }\n
+\n
+    if (_children[i-1].innerHTML === \'\') { // empty page div reduces pageCount by 1\n
+      Amberjack.pageCount = Amberjack.pageCount - 1;\n
+      Amberjack.hasExitPage = true;\n
+    }\n
+\n
+    if (!Amberjack.pageId) {\n
+      AmberjackBase.alert(\'no matching page in ajTourDef found\');\n
+    }\n
+\n
+    AmberjackBase.postFetch(Amberjack.BASE_URL + \'skin/\' + Amberjack.skinId.toLowerCase() + \'/control.tpl.js\', \'script\');\n
+    AmberjackBase.postFetch(Amberjack.BASE_URL + \'skin/\' + Amberjack.skinId.toLowerCase() + \'/style.css\', \'style\');\n
+\n
+    if (Amberjack.doCoverBody) {\n
+      Amberjack.coverBody();\n
+    }\n
+  },\n
+\n
+  /**\n
+   * Checks if passed href is *included* in current location\'s href\n
+   * @author Arash Yalpani\n
+   *\n
+   * @param href URL to be matched against\n
+   *\n
+   * @example Amberjack.urlMatch(\'http://mysite.com/domains/\')\n
+   */\n
+  urlMatch: function(href) {\n
+    return (location.href.indexOf(href) != -1);\n
+  },\n
+\n
+\n
+  /**\n
+   * Return height of inner window\n
+   * Copied and modified:\n
+   * http://www.dynamicdrive.com/forums/archive/index.php/t-10373.html\n
+   *\n
+   * @author Arash Yalpani\n
+   * @example Amberjack.getWindowInnerHeight()\n
+   */\n
+  getWindowInnerHeight: function() {\n
+    var yInner;\n
+\n
+    if (window.innerHeight && window.scrollMaxY) {\n
+      yInner = window.innerHeight + window.scrollMaxY;\n
+    }\n
+    else if (document.body.scrollHeight > document.body.offsetHeight){ // all but Explorer Mac\n
+      yInner = document.body.scrollHeight;\n
+    }\n
+    else if (document.documentElement && document.documentElement.scrollHeight > document.documentElement.offsetHeight){ // Explorer 6 strict mode\n
+      yInner = document.documentElement.scrollHeight;\n
+    }\n
+    else { // Explorer Mac...would also work in Mozilla and Safari\n
+      yInner = document.body.offsetHeight;\n
+    }\n
+\n
+    var windowWidth, windowHeight;\n
+    if (self.innerHeight) { // all except Explorer\n
+      windowHeight = self.innerHeight;\n
+    }\n
+    else if (document.documentElement && document.documentElement.clientHeight) { // Explorer 6 Strict Mode\n
+      windowHeight = document.documentElement.clientHeight;\n
+    }\n
+    else if (document.body) { // other Explorers\n
+      windowHeight = document.body.clientHeight;\n
+    }\n
+\n
+    // for small pages with total height less then height of the viewport\n
+    return (yInner < windowHeight) ? windowHeight : yInner;\n
+  },\n
+\n
+  /**\n
+   * Creates transparent layer and places it in the document, in front of\n
+   * all other layers (through CSS z-index)\n
+   * @author Arash Yalpani\n
+   *\n
+   * @example Amberjack.coverBody()\n
+   */\n
+  coverBody: function() {\n
+    var div = document.createElement(\'div\');\n
+    div.id = \'ajBodyCover\';\n
+\n
+    div.style.height = Amberjack.getWindowInnerHeight() + \'px\';\n
+\n
+    if (Amberjack.bodyCoverCloseOnClick) {\n
+      div.onclick = function() {\n
+        Amberjack.uncoverBody();\n
+      };\n
+    }\n
+\n
+    document.body.appendChild(div);\n
+    Amberjack.interval = window.setInterval(Amberjack.refreshCover, 2000);\n
+  },\n
+\n
+  /**\n
+   * refreshes transparent layer\'s height\n
+   * @author Arash Yalpani\n
+   *\n
+   * @example Amberjack.refreshCover()\n
+   */\n
+  refreshCover: function() {\n
+    document.getElementById(\'ajBodyCover\').style.height = Amberjack.getWindowInnerHeight() + \'px\';\n
+  },\n
+\n
+  /**\n
+   * Removes transparent layer from document\n
+   * @author Arash Yalpani\n
+   *\n
+   * @example Amberjack.uncoverBody()\n
+   */\n
+  uncoverBody: function() {\n
+    window.clearInterval(Amberjack.interval);\n
+    document.body.removeChild(document.getElementById(\'ajBodyCover\'));\n
+  },\n
+\n
+  /*\n
+  doHighlight: function() {\n
+    var body = document.body;\n
+    var highlightElements = AmberjackBase.getElementsByTagNameAndAttr(\'div\', \'class\', \'ajHighlight\', body);\n
+    for (i = 0; i < highlightElements.length; i++) {\n
+      highlightElements[i].style.border = \'3px solid red\';\n
+      highlightElements[i].style.backgroundColor = \'#fee\';\n
+    }\n
+  },\n
+  */\n
+  createCookie: function(name,value,days) {\n
+        if (days) {\n
+                var date = new Date();\n
+                date.setTime(date.getTime()+(days*24*60*60*1000));\n
+                var expires = "; expires="+date.toGMTString();\n
+        }\n
+        else var expires = "";\n
+        document.cookie = name+"="+value+expires+"; path=/";\n
+  },\n
+\n
+  /**\n
+    * Reads a cookie\n
+    *\n
+    * @param name cookie\'s name\n
+    *\n
+    */\n
+  readCookie: function(name) {\n
+        var nameEQ = name + "=";\n
+        var ca = document.cookie.split(\';\');\n
+        for(var i=0;i < ca.length;i++) {\n
+                var c = ca[i];\n
+                while (c.charAt(0)===\' \') c = c.substring(1,c.length);\n
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length);\n
+        }\n
+        return null;\n
+  },\n
+\n
+  /**\n
+    * Erases a cookie\n
+    *\n
+    * @param name cookie\'s name\n
+    *\n
+    */\n
+  eraseCookie: function(name) {\n
+        createCookie(name,"",-1);\n
+  },\n
+restoreWindowPosition: function(){\n
+        coords = Amberjack.readCookie(\'ajcookie_controlposition\');\n
+        if (coords){\n
+            point = coords.split(\'#\');\n
+            $(\'#ajControl\').css(\'left\', point[0]+\'px\').css(\'top\',point[1]+ \'px\');\n
+        } else {\n
+            var winW = $(window).width();\n
+            var startPosition = winW/2-$(\'#ajControl\').width()/2;\n
+            $(\'#ajControl\').css(\'left\', startPosition + \'px\').css(\'top\',\'30px\');\n
+        }\n
+    },\n
+\n
+\n
+  /**\n
+   * Gets called, whenever the user clicks on the close button of Amberjack control\n
+   * @author Arash Yalpani\n
+   *\n
+   * @example Amberjack.close()\n
+   */\n
+  close: function() {\n
+    if (Amberjack.onCloseClickStay) {\n
+      AmberjackControl.close();\n
+      if (Amberjack.doCoverBody) {\n
+        Amberjack.uncoverBody();\n
+      }\n
+      return null;\n
+    }\n
+\n
+    if (Amberjack.closeUrl) {\n
+      window.location.href = Amberjack.closeUrl;\n
+    }\n
+    return null;\n
+  }\n
+};
+
+]]></string> </value>
+        </item>
+        <item>
+            <key> <string>title</string> </key>
+            <value> <string></string> </value>
+        </item>
+      </dictionary>
+    </pickle>
+  </record>
+</ZopeData>

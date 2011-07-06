@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<ZopeData>
+  <record id="1" aka="AAAAAAAAAAE=">
+    <pickle>
+      <global name="ZopePageTemplate" module="Products.PageTemplates.ZopePageTemplate"/>
+    </pickle>
+    <pickle>
+      <dictionary>
+        <item>
+            <key> <string>_bind_names</string> </key>
+            <value>
+              <object>
+                <klass>
+                  <global name="NameAssignments" module="Shared.DC.Scripts.Bindings"/>
+                </klass>
+                <tuple/>
+                <state>
+                  <dictionary>
+                    <item>
+                        <key> <string>_asgns</string> </key>
+                        <value>
+                          <dictionary>
+                            <item>
+                                <key> <string>name_subpath</string> </key>
+                                <value> <string>traverse_subpath</string> </value>
+                            </item>
+                          </dictionary>
+                        </value>
+                    </item>
+                  </dictionary>
+                </state>
+              </object>
+            </value>
+        </item>
+        <item>
+            <key> <string>_text</string> </key>
+            <value> <unicode encoding="cdata"><![CDATA[
+
+<div tal:attributes="id here/getReference" class="ajTourDef" id="myTour" style="display:none">\n
+  <tal:block tal:repeat="step here/searchFolder">\n
+    <div tal:attributes="title python: request.BASE2+step.getUrlString()">\n
+      <h2 tal:content="step/getTitle">Step Title</h2>\n
+      <p tal:content="step/getTextContent">Text Content</p>   \n
+      <ul class="ajSteps">\n
+        <tal:block tal:repeat="microstep step/searchFolder">\n
+          <li>\n
+            <div class="ajDescription" tal:content="microstep/getTitle">Micro Step Title</div>\n
+            <a class="ajLink" href=""><img src="nextStep.png"></a>\n
+          </li>\n
+        </tal:block>\n
+      </ul>\n
+    </div>\n
+  </tal:block>\n
+</div>\n
+\n
+<script type="text/javascript" src="amberjack.js"></script>\n
+\n
+<script type="text/javascript" defer="true">\n
+   Amberjack.onCloseClickStay = true;\n
+   Amberjack.doCoverBody = false;\n
+   Amberjack.ADD_SCRIPT = \'extends.js\';\n
+   Amberjack.ADD_STYLE = \'extends.css\';\n
+   Amberjack.open();\n
+</script>
+
+]]></unicode> </value>
+        </item>
+        <item>
+            <key> <string>content_type</string> </key>
+            <value> <string>text/html</string> </value>
+        </item>
+        <item>
+            <key> <string>expand</string> </key>
+            <value> <int>0</int> </value>
+        </item>
+        <item>
+            <key> <string>id</string> </key>
+            <value> <string>Tour_viewAsTour</string> </value>
+        </item>
+        <item>
+            <key> <string>output_encoding</string> </key>
+            <value> <string>utf-8</string> </value>
+        </item>
+        <item>
+            <key> <string>title</string> </key>
+            <value> <unicode></unicode> </value>
+        </item>
+      </dictionary>
+    </pickle>
+  </record>
+</ZopeData>

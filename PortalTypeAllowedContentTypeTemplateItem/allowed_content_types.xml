@@ -1,0 +1,11 @@
+<allowed_content_type_list>
+ <portal_type id="Tour">
+  <item>Tour Step</item>
+ </portal_type>
+ <portal_type id="Tour Module">
+  <item>Tour</item>
+ </portal_type>
+ <portal_type id="Tour Step">
+  <item>Tour Micro Step</item>
+ </portal_type>
+</allowed_content_type_list>

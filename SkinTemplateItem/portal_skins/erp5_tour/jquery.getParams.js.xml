@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<ZopeData>
+  <record id="1" aka="AAAAAAAAAAE=">
+    <pickle>
+      <global name="DTMLMethod" module="OFS.DTMLMethod"/>
+    </pickle>
+    <pickle>
+      <dictionary>
+        <item>
+            <key> <string>__name__</string> </key>
+            <value> <string>jquery.getParams.js</string> </value>
+        </item>
+        <item>
+            <key> <string>_vars</string> </key>
+            <value>
+              <dictionary/>
+            </value>
+        </item>
+        <item>
+            <key> <string>globals</string> </key>
+            <value>
+              <dictionary/>
+            </value>
+        </item>
+        <item>
+            <key> <string>raw</string> </key>
+            <value> <string encoding="cdata"><![CDATA[
+
+/* Copyright (c) 2006 Mathias Bank (http://www.mathias-bank.de)\n
+ * Dual licensed under the MIT (http://www.opensource.org/licenses/mit-license.php) \n
+ * and GPL (http://www.opensource.org/licenses/gpl-license.php) licenses.\n
+ * \n
+ * Thanks to Hinnerk Ruemenapf - http://hinnerk.ruemenapf.de/ for bug reporting and fixing.\n
+ */\n
+jQuery.extend({\n
+/**\n
+* Returns get parameters.\n
+*\n
+* If the desired param does not exist, null will be returned\n
+*\n
+* @example value = $.getURLParam("paramName");\n
+*/ \n
+ getURLParam: function(strParamName){\n
+\t  var strReturn = "";\n
+\t  var strHref = window.location.href;\n
+\t  var bFound=false;\n
+\t  \n
+\t  var cmpstring = strParamName + "=";\n
+\t  var cmplen = cmpstring.length;\n
+\n
+\t  if ( strHref.indexOf("?") > -1 ){\n
+\t    var strQueryString = strHref.substr(strHref.indexOf("?")+1);\n
+\t    var aQueryString = strQueryString.split("&");\n
+\t    for ( var iParam = 0; iParam < aQueryString.length; iParam++ ){\n
+\t      if (aQueryString[iParam].substr(0,cmplen)==cmpstring){\n
+\t        var aParam = aQueryString[iParam].split("=");\n
+\t        strReturn = aParam[1];\n
+\t        bFound=true;\n
+\t        break;\n
+\t      }\n
+\t      \n
+\t    }\n
+\t  }\n
+\t  if (bFound==false) return null;\n
+\t  return strReturn;\n
+\t}\n
+});
+
+]]></string> </value>
+        </item>
+        <item>
+            <key> <string>title</string> </key>
+            <value> <string></string> </value>
+        </item>
+      </dictionary>
+    </pickle>
+  </record>
+</ZopeData>

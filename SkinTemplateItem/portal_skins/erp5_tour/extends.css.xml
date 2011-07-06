@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<ZopeData>
+  <record id="1" aka="AAAAAAAAAAE=">
+    <pickle>
+      <global name="DTMLMethod" module="OFS.DTMLMethod"/>
+    </pickle>
+    <pickle>
+      <dictionary>
+        <item>
+            <key> <string>__name__</string> </key>
+            <value> <string>extends.css</string> </value>
+        </item>
+        <item>
+            <key> <string>_vars</string> </key>
+            <value>
+              <dictionary/>
+            </value>
+        </item>
+        <item>
+            <key> <string>globals</string> </key>
+            <value>
+              <dictionary/>
+            </value>
+        </item>
+        <item>
+            <key> <string>raw</string> </key>
+            <value> <string>\n
+\n
+.ajSteps li {\n
+    background-position: 5px 0.5em;\n
+    margin: 0;\n
+    padding: 0.4em 0.4em 0.4em 16px;\n
+}\n
+\n
+.ajSteps li {\n
+    background: url("dot.gif") no-repeat scroll left top transparent;\n
+    clear: both;\n
+    display: block;\n
+    list-style: none outside none;\n
+    padding-left: 12px;\n
+}\n
+\n
+.ajSteps {\n
+    line-height: 1.4em;\n
+}\n
+.ajDescription {\n
+  float: left;\n
+}\n
+\n
+.ajLink {\n
+  float: right;\n
+}</string> </value>
+        </item>
+        <item>
+            <key> <string>title</string> </key>
+            <value> <string></string> </value>
+        </item>
+      </dictionary>
+    </pickle>
+  </record>
+</ZopeData>

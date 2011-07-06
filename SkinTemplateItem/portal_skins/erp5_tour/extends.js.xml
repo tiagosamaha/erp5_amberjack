@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<ZopeData>
+  <record id="1" aka="AAAAAAAAAAE=">
+    <pickle>
+      <global name="DTMLMethod" module="OFS.DTMLMethod"/>
+    </pickle>
+    <pickle>
+      <dictionary>
+        <item>
+            <key> <string>__name__</string> </key>
+            <value> <string>extends.js</string> </value>
+        </item>
+        <item>
+            <key> <string>_vars</string> </key>
+            <value>
+              <dictionary/>
+            </value>
+        </item>
+        <item>
+            <key> <string>globals</string> </key>
+            <value>
+              <dictionary/>
+            </value>
+        </item>
+        <item>
+            <key> <string>raw</string> </key>
+            <value> <string>$(function() {\n
+Amberjack.restoreWindowPosition();\n
+$("#ajControl").draggable({ \n
+                                handle: \'#ajControlNavi\',\n
+                                cursor: \'crosshair\',\n
+                                containment: \'body\',\n
+                                stop: function(event, ui) {\n
+                                    Amberjack.createCookie(\'ajcookie_controlposition\', ui.position.left + "#" + ui.position.top, 10);\n
+                                }\n
+                            });\n
+});\n
+</string> </value>
+        </item>
+        <item>
+            <key> <string>title</string> </key>
+            <value> <string></string> </value>
+        </item>
+      </dictionary>
+    </pickle>
+  </record>
+</ZopeData>
